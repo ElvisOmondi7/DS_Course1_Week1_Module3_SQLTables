@@ -12,7 +12,7 @@ pd.read_sql("""SELECT * FROM sqlite_master""", conn)
 
 # CodeGrade step1
 df_boston = pd.read_sql("""
-SELECT e.firstName, e.lastName, e.jobTitle
+SELECT e.firstName, e.lastName
 FROM employees e
 JOIN offices o ON e.officeCode = o.officeCode
 WHERE o.city = 'Boston'
@@ -65,7 +65,6 @@ GROUP BY e.employeeNumber
 HAVING AVG(c.creditLimit) > 90000
 ORDER BY num_customers DESC
 """, conn)
-df_credit
 
 # CodeGrade step7
 df_product_sold = pd.read_sql("""
@@ -102,15 +101,24 @@ GROUP BY o.officeCode
 df_customers
 
 # CodeGrade step10
-df_boston = pd.read_sql("""
-SELECT e.firstName, e.lastName, e.jobTitle
+df_under_20 = pd.read_sql("""
+SELECT DISTINCT e.employeeNumber, e.firstName, e.lastName, o.city, o.officeCode
 FROM employees e
 JOIN offices o ON e.officeCode = o.officeCode
-WHERE o.city = 'Boston'
+JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber
+JOIN orders ord ON c.customerNumber = ord.customerNumber
+JOIN orderdetails od ON ord.orderNumber = od.orderNumber
+WHERE od.productCode IN (
+    SELECT p.productCode
+    FROM products p
+    JOIN orderdetails od2 ON p.productCode = od2.productCode
+    JOIN orders o2 ON od2.orderNumber = o2.orderNumber
+    GROUP BY p.productCode
+    HAVING COUNT(DISTINCT o2.customerNumber) < 20
+)
 """, conn)
-df_boston
+df_under_20
 
 # Run this cell without changes
 
 conn.close()
-
