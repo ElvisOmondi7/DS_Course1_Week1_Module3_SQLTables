@@ -17,6 +17,7 @@ FROM employees e
 JOIN offices o ON e.officeCode = o.officeCode
 WHERE o.city = 'Boston'
 """, conn)
+df_boston
 
 # CodeGrade step2
 df_zero_emp = pd.read_sql("""
